@@ -44,7 +44,7 @@ const reducer = (state: StoreState, action: Action): StoreState => {
       return {
         ...state,
         historyList: state.historyList.filter(
-          (item) => item.cityId !== action.payload.cityId
+          (item) => item.id !== action.payload.id
         ),
       };
     }

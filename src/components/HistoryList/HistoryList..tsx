@@ -1,7 +1,8 @@
-import { Card, Drawer } from "antd";
+import { Card, Drawer, Button, Popconfirm } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { historyStore } from "../../store/history";
 import type { HistoryCardType } from "./interface";
+import { ActionType } from "./interface";
 import dayjs from "dayjs";
 import { typeMap } from "./data";
 import { TYPE_OPTIONS } from "../WeatherDisplay/interface";
@@ -28,6 +29,15 @@ export const HistoryList = () => {
       store?.setChange(!change);
     },
     [setSearchParams, store]
+  );
+  const handleDelete = useCallback(
+    (e?: React.MouseEvent, history?: HistoryCardType) => {
+      e?.stopPropagation(); // 阻止事件冒泡，避免触发 Card 的 onClick
+      if (store?.dispatch && history) {
+        store.dispatch({ type: ActionType.DEL, payload: history });
+      }
+    },
+    [store]
   );
   useEffect(() => {
     if (store && store.open !== undefined) {
@@ -78,6 +88,26 @@ export const HistoryList = () => {
               <div>数据类型:{typeList || "--"}</div>
               <div>单位:{unitMap[unit as keyof typeof unitMap] || "--"}</div>
               <div>高级筛选:{advancedList || "--"}</div>
+              <div className="flex justify-end">
+                <Popconfirm
+                  title="确定要删除这条历史记录吗？"
+                  onConfirm={(e) => {
+                    e?.stopPropagation();
+                    handleDelete(e, history);
+                  }}
+                  onCancel={(e) => e?.stopPropagation()}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <Button
+                    type="text"
+                    danger
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    删除
+                  </Button>
+                </Popconfirm>
+              </div>
             </Card>
           );
         })
