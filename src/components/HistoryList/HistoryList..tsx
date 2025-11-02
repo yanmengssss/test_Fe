@@ -1,5 +1,5 @@
 import { Card, Drawer } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { historyStore } from "../../store/history";
 import type { HistoryCardType } from "./interface";
 import dayjs from "dayjs";
@@ -15,17 +15,20 @@ export const HistoryList = () => {
   const onClose = () => {
     store?.setOpen(false);
   };
-  const handleClick = (history: HistoryCardType) => {
-    setSearchParams({
-      city: history.cityId,
-      unit: history.unit,
-      date: String(history.date),
-      type: history.type.join(","),
-      advanced: history.advanced.join(","),
-    });
-    const change = store?.change;
-    store?.setChange(!change);
-  };
+  const handleClick = useCallback(
+    (history: HistoryCardType) => {
+      setSearchParams({
+        city: history.cityId,
+        unit: history.unit,
+        date: String(history.date),
+        type: history.type.join(","),
+        advanced: history.advanced.join(","),
+      });
+      const change = store?.change;
+      store?.setChange(!change);
+    },
+    [setSearchParams, store]
+  );
   useEffect(() => {
     if (store && store.open !== undefined) {
       setOpen(store.open);

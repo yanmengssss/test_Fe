@@ -14,7 +14,7 @@ import type {
   RadioGroupProps,
   SelectProps,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getCityList } from "../../apis";
 import { debounce } from "../../utils";
 import { useSearchParams } from "react-router-dom";
@@ -51,7 +51,7 @@ export const WeatherSearchForm = () => {
     { label: "风力等级>=3", value: "wind_speed_gte_3", className: "label-1" },
     { label: "湿度>=60%", value: "humidity_gte_60", className: "label-2" },
   ];
-  const changeCityOptions = (searchText: string) => {
+  const changeCityOptions = useCallback((searchText: string) => {
     if (searchText.trim().length < 2) {
       setCityOptions([]);
       return;
@@ -68,7 +68,7 @@ export const WeatherSearchForm = () => {
       });
       setCityOptions(cityOptions);
     });
-  };
+  }, []);
   const selectCity = (value: string) => {
     const city = cityOptions?.find((item) => item.value === value);
     if (city) {

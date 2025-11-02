@@ -1,5 +1,5 @@
 import { Card, Progress, Table } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getAirQuality, getForecast, getWeather } from "../../apis";
 import { unitMap } from "../../common";
@@ -53,39 +53,42 @@ export const WeatherDisplay = () => {
     nh3: 0,
     aqi: 0,
   });
-  const columns = [
-    {
-      title: "日期",
-      dataIndex: "date",
-      render: (date: string) => {
-        return dayjs(date).format("YYYY-MM-DD HH:mm");
+  const columns = useMemo(
+    () => [
+      {
+        title: "日期",
+        dataIndex: "date",
+        render: (date: string) => {
+          return dayjs(date).format("YYYY-MM-DD HH:mm");
+        },
       },
-    },
-    {
-      title: "最高温",
-      dataIndex: "maxTemp",
-    },
-    {
-      title: "最低温",
-      dataIndex: "minTemp",
-    },
-    {
-      title: "天气",
-      dataIndex: "weather",
-      render: (_: unknown, record: Forecast) => {
-        return (
-          <div className="flex items-center gap-2">
-            <img
-              className="w-10 h-10"
-              src={getIconUrl(record.icon)}
-              alt={record.icon}
-            />
-            <span>{record.weather}</span>
-          </div>
-        );
+      {
+        title: "最高温",
+        dataIndex: "maxTemp",
       },
-    },
-  ];
+      {
+        title: "最低温",
+        dataIndex: "minTemp",
+      },
+      {
+        title: "天气",
+        dataIndex: "weather",
+        render: (_: unknown, record: Forecast) => {
+          return (
+            <div className="flex items-center gap-2">
+              <img
+                className="w-10 h-10"
+                src={getIconUrl(record.icon)}
+                alt={record.icon}
+              />
+              <span>{record.weather}</span>
+            </div>
+          );
+        },
+      },
+    ],
+    []
+  );
 
   const [weather, setWeather] = useState<Weather>({
     temp: 0,
@@ -123,6 +126,13 @@ export const WeatherDisplay = () => {
       setWeather(weather);
     } else if (weatherRes.status === "rejected") {
       messageApi?.error("获取天气失败:" + weatherRes.reason);
+      setWeather({
+        temp: 0,
+        humidity: 0,
+        wind_speed: 0,
+        weather: "",
+        icon: "",
+      });
       type = false;
     }
     if (
@@ -141,6 +151,7 @@ export const WeatherDisplay = () => {
       setDataSource(forecast);
     } else if (forecastRes.status === "rejected") {
       messageApi?.error("获取未来天气失败:" + forecastRes.reason);
+      setDataSource([]);
       type = false;
     }
     if (
@@ -155,6 +166,17 @@ export const WeatherDisplay = () => {
       });
     } else if (airRes.status === "rejected") {
       messageApi?.error("获取空气质量失败:" + airRes.reason);
+      setAirQuality({
+        co: 0,
+        no: 0,
+        no2: 0,
+        o3: 0,
+        so2: 0,
+        pm2_5: 0,
+        pm10: 0,
+        nh3: 0,
+        aqi: 0,
+      });
       type = false;
     }
     setLoading?.(false);
