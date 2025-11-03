@@ -228,15 +228,12 @@ export const WeatherDisplay = () => {
     const advanced = searchParams.get("advanced")?.split(",") || [];
     const lat = searchParams.get("lat") || "";
     const lon = searchParams.get("lon") || "";
-    console.log("解析到参数：", { city, unit, date, type, advanced, lat, lon });
     const typeArray = type as TYPE_OPTIONS[];
     setCurrentType(typeArray);
     if (city && unit) {
       setUnit(unit as unitType);
-      setTimeout(() => {
-        getDataSource(city, unit, lat, lon, typeArray);
-        saveHistory(label, city, Number(date), type, unit, advanced, lat, lon);
-      }, 0);
+      getDataSource(city, unit, lat, lon, typeArray);
+      saveHistory(label, city, Number(date), type, unit, advanced, lat, lon);
     }
   }, [location]);
   return (
