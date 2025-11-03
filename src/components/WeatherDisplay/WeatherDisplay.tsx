@@ -101,7 +101,8 @@ export const WeatherDisplay = () => {
     city: string,
     unit: string,
     lat: string,
-    lon: string
+    lon: string,
+    types: TYPE_OPTIONS[] = currentType
   ) => {
     setLoading?.(true);
     let type = true;
@@ -110,8 +111,9 @@ export const WeatherDisplay = () => {
       getForecast(city, unit),
       getAirQuality(lat, lon),
     ]);
+    console.log("currentType", types);
     if (
-      currentType.includes(TYPE_OPTIONS.CURRENT) &&
+      types.includes(TYPE_OPTIONS.CURRENT) &&
       weatherRes.status === "fulfilled" &&
       weatherRes.value
     ) {
@@ -136,7 +138,7 @@ export const WeatherDisplay = () => {
       type = false;
     }
     if (
-      currentType.includes(TYPE_OPTIONS.FORECAST) &&
+      types.includes(TYPE_OPTIONS.FORECAST) &&
       forecastRes.status === "fulfilled" &&
       forecastRes.value
     ) {
@@ -155,7 +157,7 @@ export const WeatherDisplay = () => {
       type = false;
     }
     if (
-      currentType.includes(TYPE_OPTIONS.AIR_QUALITY) &&
+      types.includes(TYPE_OPTIONS.AIR_QUALITY) &&
       airRes.status === "fulfilled" &&
       airRes.value
     ) {
@@ -227,11 +229,14 @@ export const WeatherDisplay = () => {
     const lat = searchParams.get("lat") || "";
     const lon = searchParams.get("lon") || "";
     console.log("解析到参数：", { city, unit, date, type, advanced, lat, lon });
-    setCurrentType(type as TYPE_OPTIONS[]);
+    const typeArray = type as TYPE_OPTIONS[];
+    setCurrentType(typeArray);
     if (city && unit) {
       setUnit(unit as unitType);
-      getDataSource(city, unit, lat, lon);
-      saveHistory(label, city, Number(date), type, unit, advanced, lat, lon);
+      setTimeout(() => {
+        getDataSource(city, unit, lat, lon, typeArray);
+        saveHistory(label, city, Number(date), type, unit, advanced, lat, lon);
+      }, 0);
     }
   }, [location]);
   return (
