@@ -106,83 +106,78 @@ export const WeatherDisplay = () => {
   ) => {
     setLoading?.(true);
     let type = true;
-    const [weatherRes, forecastRes, airRes] = await Promise.allSettled([
-      getWeather(city, unit),
-      getForecast(city, unit),
-      getAirQuality(lat, lon),
-    ]);
     console.log("currentType", types);
-    if (
-      types.includes(TYPE_OPTIONS.CURRENT) &&
-      weatherRes.status === "fulfilled" &&
-      weatherRes.value
-    ) {
-      const res = weatherRes.value;
-      const weather = {
-        temp: res.main.temp,
-        humidity: res.main.humidity,
-        wind_speed: res.wind.speed,
-        weather: res.weather[0].description,
-        icon: res.weather[0].icon,
-      };
-      setWeather(weather);
-    } else if (weatherRes.status === "rejected") {
-      messageApi?.error("获取天气失败:" + weatherRes.reason);
-      setWeather({
-        temp: 0,
-        humidity: 0,
-        wind_speed: 0,
-        weather: "",
-        icon: "",
-      });
-      type = false;
-    }
-    if (
-      types.includes(TYPE_OPTIONS.FORECAST) &&
-      forecastRes.status === "fulfilled" &&
-      forecastRes.value
-    ) {
-      const res = forecastRes.value;
-      const forecast = res.list.map((item: any) => ({
-        date: item.dt_txt,
-        maxTemp: item.main.temp_max + unitMap[unit as unitType],
-        minTemp: item.main.temp_min + unitMap[unit as unitType],
-        weather: item.weather[0].description,
-        icon: item.weather[0].icon,
-      }));
-      setDataSource(forecast);
-    } else if (forecastRes.status === "rejected") {
-      messageApi?.error("获取未来天气失败:" + forecastRes.reason);
-      setDataSource([]);
-      type = false;
-    }
-    if (
-      types.includes(TYPE_OPTIONS.AIR_QUALITY) &&
-      airRes.status === "fulfilled" &&
-      airRes.value
-    ) {
-      const res = airRes.value;
-      setAirQuality({
-        ...res.list[0].components,
-        aqi: res.list[0].main.aqi,
-      });
-    } else if (airRes.status === "rejected") {
-      messageApi?.error("获取空气质量失败:" + airRes.reason);
-      setAirQuality({
-        co: 0,
-        no: 0,
-        no2: 0,
-        o3: 0,
-        so2: 0,
-        pm2_5: 0,
-        pm10: 0,
-        nh3: 0,
-        aqi: 0,
-      });
-      type = false;
-    }
-    setLoading?.(false);
 
+    if (types.includes(TYPE_OPTIONS.CURRENT)) {
+      await getWeather(city, unit)
+        .then((res) => {
+          const weather = {
+            temp: res.main.temp,
+            humidity: res.main.humidity,
+            wind_speed: res.wind.speed,
+            weather: res.weather[0].description,
+            icon: res.weather[0].icon,
+          };
+          setWeather(weather);
+        })
+        .catch((err) => {
+          messageApi?.error("获取天气失败:" + err);
+          setWeather({
+            temp: 0,
+            humidity: 0,
+            wind_speed: 0,
+            weather: "",
+            icon: "",
+          });
+          type = false;
+        });
+    }
+
+    if (types.includes(TYPE_OPTIONS.FORECAST)) {
+      await getForecast(city, unit)
+        .then((res) => {
+          const forecast = res.list.map((item: any) => ({
+            date: item.dt_txt,
+            maxTemp: item.main.temp_max + unitMap[unit as unitType],
+            minTemp: item.main.temp_min + unitMap[unit as unitType],
+            weather: item.weather[0].description,
+            icon: item.weather[0].icon,
+          }));
+          setDataSource(forecast);
+        })
+        .catch((err) => {
+          messageApi?.error("获取未来天气失败:" + err);
+          setDataSource([]);
+          type = false;
+        });
+    }
+
+    if (types.includes(TYPE_OPTIONS.AIR_QUALITY)) {
+      await getAirQuality(lat, lon)
+        .then((res) => {
+          setAirQuality({
+            ...res.list[0].components,
+            aqi: res.list[0].main.aqi,
+          });
+        })
+        .catch((err) => {
+          messageApi?.error("获取空气质量失败:" + err);
+          setAirQuality({
+            co: 0,
+            no: 0,
+            no2: 0,
+            o3: 0,
+            so2: 0,
+            pm2_5: 0,
+            pm10: 0,
+            nh3: 0,
+            aqi: 0,
+          });
+          type = false;
+        });
+    }
+
+    setLoading?.(false);
     console.log("获取数据完成！");
     if (type) {
       setTimeout(() => {
@@ -190,6 +185,7 @@ export const WeatherDisplay = () => {
       }, 0);
     }
   };
+
   const saveHistory = (
     city: string,
     cityId: string,
